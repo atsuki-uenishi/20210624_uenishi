@@ -66,7 +66,7 @@ export default {
                 content: this.shareContent
             };
             await this.$axios.post("http://127.0.0.1:8000/api/post/", sendData);
-            this.getPosts();
+            this.shareContent = ""
         },
         async addLike(id, like, postUserId) {
             if(this.userId !== postUserId) {
@@ -83,14 +83,12 @@ export default {
                     await this.$axios.put("http://127.0.0.1:8000/api/post/" + id, sendData);
                     this.likeactive = false;
                 }
-                this.getPosts();
             }
         },
         async deletePost(id, postUserId) {
             const userId = this.userId;
             if(userId === postUserId) {
                 await this.$axios.delete("http://127.0.0.1:8000/api/post/" + id);
-                this.getPosts();
             }
         },
         logout() {

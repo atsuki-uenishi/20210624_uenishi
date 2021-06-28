@@ -53,6 +53,7 @@ export default {
                 content: this.shareContent
             };
             await this.$axios.post("http://127.0.0.1:8000/api/post/", sendData);
+            this.shareContent = ""
             this.getPosts();
         },
         async addLike(id, like, postUserId) {
