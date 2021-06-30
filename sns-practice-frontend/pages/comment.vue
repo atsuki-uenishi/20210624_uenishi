@@ -127,6 +127,7 @@ export default {
             const userId = this.userId;
             if(userId === postUserId) {
                 await this.$axios.delete("http://127.0.0.1:8000/api/post/" + id);
+                await this.$router.replace('/home')
             }
         },
         logout() {
@@ -144,6 +145,7 @@ export default {
         },
         async getComment() {
             const resData = await this.$axios.get("http://127.0.0.1:8000/api/comment/", {params: {post_id: this.$route.query.postId}});
+            console.log(resData.data.data)
             this.comments = resData.data.data
         },
         async insertComment() {
