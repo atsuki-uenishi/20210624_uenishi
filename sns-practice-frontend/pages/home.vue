@@ -18,8 +18,8 @@
             <div class="content" v-for="post in posts" :key="post.id">
                 <div class="flex post">
                     <p>{{post.user.name}}</p>
-                    <img class="timeline-img" :class="{'like-active' : likeactive}" @click="addLike(post.id, post.like, post.user.id)" src="../assets/img/heart.png">
-                    <p>{{post.like}}</p>
+                    <img class="timeline-img"  :class="{'like-active' : post.like}" @click="toggleLike(post.id, post.user.id, post.like, post.like_count)" src="../assets/img/heart.png">
+                    <p>{{post.like_count}}</p>
                     <img class="timeline-img" @click="deletePost(post.id, post.user.id)" src="../assets/img/cross.png">
                     <img class="detail-img" @click="toDetail(post.id)" src="../assets/img/detail.png">
                 </div>
@@ -28,7 +28,6 @@
         </div>
     </div>
 </template>
-
 <script>
 import firebase from '~/plugins/firebase'
 export default {
@@ -37,7 +36,6 @@ export default {
             userId: "",
             shareContent: "",
             posts: [],
-            likeactive: false
         }
     },
     methods: {
@@ -56,29 +54,68 @@ export default {
             this.shareContent = ""
             this.getPosts();
         },
-        async addLike(id, like, postUserId) {
-            if(this.userId !== postUserId) {
-                if(this.likeactive === false){
-                    const sendData = {
-                    like: (like+1)
-                    }
-                    await this.$axios.put("http://127.0.0.1:8000/api/post/" + id, sendData);
-                    this.likeactive = true;
-                }else {
-                    const sendData = {
-                    like: (like-1)
-                    }
-                    await this.$axios.put("http://127.0.0.1:8000/api/post/" + id, sendData);
-                    this.likeactive = false;
-                }
-                this.getPosts();
-            }
-        },
         async deletePost(id, postUserId) {
             const userId = this.userId;
             if(userId === postUserId) {
                 await this.$axios.delete("http://127.0.0.1:8000/api/post/" + id);
                 this.getPosts();
+            }
+        },
+        async alreadyLike() {
+            const resData = await this.$axios.get("http://127.0.0.1:8000/api/post/");
+            const postId = await resData.data.data.map(obj => obj.id);
+            const likes = await resData.data.data.map(obj => obj.like_count);
+            for (let i = 0; i < postId.length; i++) {
+                const element = postId[i];
+                const like = likes[i]
+                const alreadyLike = await this.$axios.get("http://127.0.0.1:8000/api/like/", {params: {user_id: this.userId, post_id: element}});
+                if(alreadyLike.data.data　== null) {
+                const sendData = {
+                    like: false,
+                    like_count: like
+                }
+                await this.$axios.put("http://127.0.0.1:8000/api/post/" + element, sendData);
+                }else if(alreadyLike.data.data　== undefined) {
+                    const sendData = {
+                    like: false,
+                    like_count: like
+                }
+                await this.$axios.put("http://127.0.0.1:8000/api/post/" + element, sendData);
+            } else {
+                const sendData = {
+                    like: true,
+                    like_count: like
+                }
+                await this.$axios.put("http://127.0.0.1:8000/api/post/" + element, sendData);
+            }
+            }
+            await this.getPosts();
+        },
+        async toggleLike(postId, postUserId, like, likeCount) {
+            if(this.userId !== postUserId) {
+                const sendData = {
+                    post_id: postId,
+                    user_id: this.userId
+                }
+                if(like == false) {
+                    const resData = await this.$axios.post("http://127.0.0.1:8000/api/like/",sendData)
+                    const likeData = {
+                    like: true,
+                    like_count: resData.data.likeCount
+                }
+                    await this.$axios.put("http://127.0.0.1:8000/api/post/" + postId, likeData);
+                    this.getPosts();
+                } else {
+                    const resData = await this.$axios.get("http://127.0.0.1:8000/api/like/",{params: {user_id: this.userId, post_id: postId}});
+                    const id = resData.data.data.id;
+                    await this.$axios.delete("http://127.0.0.1:8000/api/like/" + id);
+                    const sendlike = {
+                        like: false,
+                        like_count: (likeCount-1)
+                    }
+                        await this.$axios.put("http://127.0.0.1:8000/api/post/" + postId, sendlike);
+                    }
+                    this.getPosts();
             }
         },
         toDetail(id) {
@@ -96,12 +133,12 @@ export default {
         async logoutIdSet() {
             await this.$store.commit('userIdSet', "")
             await this.$router.replace('/')
-        }
+        },
     },
     created() {
-        this.getPosts();
         this.userId = this.$store.state.userId;
-    },
+        this.alreadyLike()
+    }
 }
 </script>
 

@@ -37,12 +37,13 @@ class PostController extends Controller
 
     public function update(Request $request, Post $post) {
         $update = [
-            'like' => $request->like
+            'like' => $request->like,
+            'like_count' => $request->like_count
         ];
         $item = Post::where('id', $post->id)->update($update);
         if($item) {
             return response()->json([
-                'message' => 'Likeしました'
+                'message' => 'Likeを更新しました'
             ],200);
         }
     }

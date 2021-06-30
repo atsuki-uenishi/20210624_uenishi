@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -20,14 +21,4 @@ use Illuminate\Support\Facades\Route;
 Route::apiResource('/user', UserController::class);
 Route::apiResource('/post', PostController::class);
 Route::apiResource('/comment', CommentController::class);
-
-Route::group([
-    'middleware' => ['auth:api'],
-    'prefix' => 'auth'
-], function ($router) {
-    Route::post('register', [AuthController::class, 'register'])->withoutMiddleware(['auth:api']);
-    Route::post('login', [AuthController::class, 'login'])->withoutMiddleware(['auth:api']);
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::post('refresh', [AuthController::class, 'refresh']);
-    Route::get('user', [AuthController::class, 'me']);
-});
+Route::apiResource('/like', LikeController::class);
