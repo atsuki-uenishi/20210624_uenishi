@@ -15,7 +15,6 @@
         </div>
         <div class="timeline">
             <div class="content">コメント</div>
-            <p>{{this.test}}</p>
             <div class="content" v-for="post in posts" :key="post.id">
                 <div class="flex post">
                     <p>{{post.user.name}}</p>
@@ -54,7 +53,6 @@ export default {
             likeactive: false,
             comments: [],
             inputcomment: "",
-            test: ""
         }
     },
     methods: {
@@ -145,7 +143,6 @@ export default {
         },
         async getComment() {
             const resData = await this.$axios.get("http://127.0.0.1:8000/api/comment/", {params: {post_id: this.$route.query.postId}});
-            console.log(resData.data.data)
             this.comments = resData.data.data
         },
         async insertComment() {
